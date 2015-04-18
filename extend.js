@@ -3,8 +3,8 @@
 	function extend(Parent,Child,proprieties) {
 		// make a new constructor that calls parent's then child's consctructors.
 		function Constructor () {
-			Parent.call(this);
-			Child.call(this);
+			Parent.apply(this,arguments);
+			Child.apply(this,arguments);
 		}
 		// new prototype inherits from Parent's
 		var prototype = Object.create(Parent.prototype);
