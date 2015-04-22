@@ -6,7 +6,6 @@
 		var that = this;
 		this._socket = new net.Socket();
 		this._socket.on('data', function (data) {
-			console.log(data.toString());
 			that._receiveState(JSON.parse(data.toString()));
 		})
 	}
