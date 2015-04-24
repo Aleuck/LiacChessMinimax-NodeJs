@@ -48,6 +48,7 @@
         },
         // Propriedades default e métodos
         {
+            'type' : 'p',
             'generate' : function () {
                 var moves = [],
                     myX = this.position.x,
@@ -103,6 +104,7 @@
         },
         // Propriedades default e métodos
         {
+            'type' : 'n',
             '_gen' : function (moves, x, y) {
                 // if valid position
                 if (insideBoard(x, y)) {
@@ -133,7 +135,6 @@
     //////////////////////////////////////////////////
     // Classe Queen
     //////////////////////////////////////////////////
-
     var Queen = extend(
         // Classe pai
         Piece,
@@ -145,6 +146,7 @@
         },
         // Propriedades default e métodos
         {
+            'type' : 'q',
             '_gen' : function (moves, x, y, xDir, yDir) {
                 var piece;
                 x += xDir;
@@ -171,13 +173,13 @@
                     myY = this.position.y;
                 // Eight directions, counter-clockwise
                 this._gen(moves, myX, myY,  1,  0);
-                this._gen(moves, myX, myY,  1, -1);
-                this._gen(moves, myX, myY,  0, -1);
-                this._gen(moves, myX, myY, -1, -1);
-                this._gen(moves, myX, myY, -1,  0);
-                this._gen(moves, myX, myY, -1,  1);
-                this._gen(moves, myX, myY,  0,  1);
                 this._gen(moves, myX, myY,  1,  1);
+                this._gen(moves, myX, myY,  0,  1);
+                this._gen(moves, myX, myY, -1,  1);
+                this._gen(moves, myX, myY, -1,  0);
+                this._gen(moves, myX, myY, -1, -1);
+                this._gen(moves, myX, myY,  0, -1);
+                this._gen(moves, myX, myY,  1, -1);
                 return moves;
             }
         }
@@ -191,6 +193,7 @@
     // Construtor
     function Board(state) {
         this.cells = [[], [], [], [], [], [], [], []];
+        this.whoMoves = state.who_moves;
         this.myPieces = [];
         var PIECES = {
             p: Pawn,
@@ -229,6 +232,44 @@
                 moves.push.apply(moves, ms.map(function (pos) { return { from: piece.position, to: pos }; }));
             });
             return moves;
+        },
+        afterMove: function (move) {
+
+            // Create new board (inherits from this board)
+            var newBoard = Object.create(this);
+
+            // Copy cells array
+            newBoard.cells = this.cells.map(function(arr) {
+                return arr.slice();
+            });
+
+            // Copy piece to be moved
+            var piece = newBoard.cells[move.from.x][move.from.y];
+            var newPiece = Object.create(piece);
+
+            // Place copied piece in new position
+            newPiece.position = { x: move.to.x, y: move.to.y };
+            newBoard.cells[move.to.x][move.to.y] = newPiece;
+
+            // Remove old piece from cells array
+            delete newBoard.cells[move.from.x][move.from.y];
+
+            // Change player to opposite player
+            newBoard = -this.whoMoves;
+            newBoard.myPieces = [];
+
+            // Update myPieces to opposite player
+            var i, j, p;
+            for (i = 0; i < 8; i += 1) {
+                for (j = 0; j < 8; j += 1) {
+                    p = newBoard.cells[i][j];
+                    if (p && p.team === newBoard.whoMoves) {
+                        newBoard.myPieces.push(p);
+                    }
+                }
+            }
+
+            return newBoard;
         }
     };
     exports.Board = Board;
