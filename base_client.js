@@ -37,8 +37,8 @@
 		// interface
 		sendMove: function (from_, to_) {
 			this._sendData({
-				'from': from_,
-				'to': to_
+				'from': [from_.x, from_.y],
+				'to': [to_.x, to_.y]
 			});
 		},
 		onMove: function () {},

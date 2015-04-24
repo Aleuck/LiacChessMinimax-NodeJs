@@ -24,7 +24,7 @@
                     moves = board.generate();
                     move = moves[Math.floor(Math.random() * moves.length)];
                     this.last_move = move;
-                    this.sendMove(move[0],move[1]);
+                    this.sendMove(move.from,move.to);
                 },
                 onGameOver: function (state) {
                     console.log('Game Over');

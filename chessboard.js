@@ -49,8 +49,8 @@
         {
             'generate' : function () {
                 var moves = [],
-                    myX = this.position[0],
-                    myY = this.position[1],
+                    myX = this.position.x,
+                    myY = this.position.y,
                     d = this.team,
                     x,
                     y,
@@ -60,7 +60,7 @@
                 x = myX + d;
                 y = myY;
                 if (!this.board.cells[x][y]) {
-                    moves.push([x, y]);
+                    moves.push({ x: x, y: y });
                 }
 
                 // normal capture to right
@@ -68,7 +68,7 @@
                 if (insideBoard(x, y)) {
                     piece = this.board.cells[x][y];
                     if (piece && this.isOpponent(piece)) {
-                        moves.push([x, y]);
+                        moves.push({ x: x, y: y });
                     }
                 }
 
@@ -77,7 +77,7 @@
                     if (insideBoard(x, y)) {
                     piece = this.board.cells[x][y];
                     if (piece && this.isOpponent(piece)) {
-                        moves.push([x, y]);
+                        moves.push({ x: x, y: y });
                     }
                 }
 
@@ -107,14 +107,14 @@
                 if (insideBoard(x, y)) {
                     var piece = this.board.cells[x][y];
                     if (!piece || this.isOpponent(piece)) {
-                        moves.push([x, y]);
+                        moves.push({ x: x, y: y });
                     }
                 }
             },
             'generate' : function () {
                 var moves = [],
-                    myX = this.position[0],
-                    myY = this.position[1];
+                    myX = this.position.x,
+                    myY = this.position.y;
                 this._gen(moves, myX + 1, myY + 2);
                 this._gen(moves, myX + 1, myY - 2);
                 this._gen(moves, myX - 1, myY + 2);
@@ -154,20 +154,20 @@
                     piece = this.board.cells[x][y];
                     if (piece) {
                         if (this.isOpponent(piece)) {
-                            moves.push([x, y]);
+                            moves.push({ x: x, y: y });
                         }
                         break;
                     }
                     // Add free position, go to next position
-                    moves.push([x, y]);
+                    moves.push({ x: x, y: y });
                     x += xDir;
                     y += yDir;
                 }
             },
             'generate' : function () {
                 var moves = [],
-                    myX = this.position[0],
-                    myY = this.position[1];
+                    myX = this.position.x,
+                    myY = this.position.y;
                 // Eight directions, counter-clockwise
                 this._gen(moves, myX, myY,  1,  0);
                 this._gen(moves, myX, myY,  1, -1);
@@ -206,7 +206,7 @@
                     ch = c[i].toLowerCase();
                     cls = PIECES[ch];
                     team = ch === c[i] ? Team.BLACK : Team.WHITE;
-                    piece = new cls(this, team, [x, y]);
+                    piece = new cls(this, team, { x: x, y: y });
                     this.cells[x][y] = piece;
                     if (team === my_team) {
                         this.myPieces.push(piece);
@@ -219,14 +219,13 @@
     // Propriedades default e métodos
     Board.prototype = {
         isEmpty: function (pos) {
-            return (this.cells[pos[0]][pos[1]] == undefined);
+            return (this.cells[pos.x][pos.y] == undefined);
         },
         generate: function () {
             var moves = [];
             this.myPieces.forEach(function (piece) {
                 var ms = piece.generate();
-                
-                moves.push.apply(moves, ms = ms.map(function (pos) { return [piece.position, pos]; }));
+                moves.push.apply(moves, ms.map(function (pos) { return { from: piece.position, to: pos }; }));
             });
             return moves;
         }
