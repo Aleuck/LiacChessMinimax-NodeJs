@@ -1,9 +1,10 @@
 (function (exports) {
-    var extend = require('./extend.js').extend;
-    var Team = {
-        WHITE : 1,
-        BLACK : -1
-    };
+    'use strict';
+    var extend = require('./extend.js').extend,
+        Team = {
+            WHITE : 1,
+            BLACK : -1
+        };
 
     function insideBoard(x, y) {
         return (x >= 0 && x <= 7 && y >= 0 && y <= 7);
@@ -74,7 +75,7 @@
 
                 // normal capture to left
                 y = myY - 1;
-                    if (insideBoard(x, y)) {
+                if (insideBoard(x, y)) {
                     piece = this.board.cells[x][y];
                     if (piece && this.isOpponent(piece)) {
                         moves.push({ x: x, y: y });
@@ -199,14 +200,14 @@
             my_team = state.who_moves,
             c = state.board,
             i = 0,
-            x, y, ch, cls, team, piece;
+            x, y, ch, PieceType, team, piece;
         for (x = 7; x >= 0; x -= 1) {
             for (y = 0; y < 8; y += 1) {
                 if (c[i] !== '.') {
                     ch = c[i].toLowerCase();
-                    cls = PIECES[ch];
+                    PieceType = PIECES[ch];
                     team = ch === c[i] ? Team.BLACK : Team.WHITE;
-                    piece = new cls(this, team, { x: x, y: y });
+                    piece = new PieceType(this, team, { x: x, y: y });
                     this.cells[x][y] = piece;
                     if (team === my_team) {
                         this.myPieces.push(piece);
@@ -219,7 +220,7 @@
     // Propriedades default e métodos
     Board.prototype = {
         isEmpty: function (pos) {
-            return (this.cells[pos.x][pos.y] == undefined);
+            return (!this.cells[pos.x][pos.y]);
         },
         generate: function () {
             var moves = [];
