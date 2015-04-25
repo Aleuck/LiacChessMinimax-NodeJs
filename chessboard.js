@@ -58,14 +58,14 @@
                     piece;
 
                 // movement to 1 forward
-                x = myX + d;
-                y = myY;
+                x = myX;
+                y = myY + d;
                 if (!this.board.cells[x][y]) {
                     moves.push({ x: x, y: y });
                 }
 
                 // normal capture to right
-                y = myY + 1;
+                x = myX + 1;
                 if (insideBoard(x, y)) {
                     piece = this.board.cells[x][y];
                     if (piece && this.isOpponent(piece)) {
@@ -74,7 +74,7 @@
                 }
 
                 // normal capture to left
-                y = myY - 1;
+                x = myX - 1;
                 if (insideBoard(x, y)) {
                     piece = this.board.cells[x][y];
                     if (piece && this.isOpponent(piece)) {
@@ -203,8 +203,8 @@
             c = state.board,
             i = 0,
             x, y, ch, PieceType, team, piece;
-        for (x = 7; x >= 0; x -= 1) {
-            for (y = 0; y < 8; y += 1) {
+        for (y = 7; y >= 0; y -= 1) {
+            for (x = 0; x < 8; x += 1) {
                 if (c[i] !== '.') {
                     ch = c[i].toLowerCase();
                     PieceType = PIECES[ch];
@@ -273,13 +273,12 @@
         },
         isTerminal : function () {
             var x, y, p, p1, p2;
-            this.print();
             // Check pawns on first and last rows
-            for (y = 0; y < 8; y += 1) {
+            for (x = 0; x < 8; x += 1) {
                 
                 // Check pieces on first and last rows
-                p1 = this.cells[0][y];
-                p2 = this.cells[7][y];
+                p1 = this.cells[x][0];
+                p2 = this.cells[x][7];
                 
                 // If piece is a pawn, board is terminal
                 if ((p1 && p1.type == 'p') || (p2 && p2.type == 'p')) {
