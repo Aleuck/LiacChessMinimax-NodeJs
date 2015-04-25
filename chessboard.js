@@ -20,7 +20,6 @@
         this.board = null;
         this.team = null;
         this.position = null;
-        this.type = null;
     }
     // Propriedades default e métodos
     Piece.prototype = {
@@ -255,22 +254,85 @@
             delete newBoard.cells[move.from.x][move.from.y];
 
             // Change player to opposite player
-            newBoard = -this.whoMoves;
+            newBoard.whoMoves = -this.whoMoves;
             newBoard.myPieces = [];
 
             // Update myPieces to opposite player
-            var i, j, p;
-            for (i = 0; i < 8; i += 1) {
-                for (j = 0; j < 8; j += 1) {
-                    p = newBoard.cells[i][j];
+            var x, y, p;
+            for (x = 0; x < 8; x += 1) {
+                for (y = 0; y < 8; y += 1) {
+                    p = newBoard.cells[x][y];
+                    // diz que cells é undefined
                     if (p && p.team === newBoard.whoMoves) {
                         newBoard.myPieces.push(p);
                     }
                 }
             }
-
+            
             return newBoard;
+        },
+        isTerminal : function () {
+            var x, y, p, p1, p2;
+            this.print();
+            // Check pawns on first and last rows
+            for (y = 0; y < 8; y += 1) {
+                
+                // Check pieces on first and last rows
+                p1 = this.cells[0][y];
+                p2 = this.cells[7][y];
+                
+                // If piece is a pawn, board is terminal
+                if ((p1 && p1.type == 'p') || (p2 && p2.type == 'p')) {
+                    return true;
+                }
+            }
+            
+            // Check if either player has no more pawns
+            var blackPawnsCount = 0;
+            var whitePawnsCount = 0;
+            for (x = 0; x < 8; x += 1) {
+                for (y = 0; y < 8; y += 1) {
+                    p = this.cells[x][y];
+                    if (p && p.type == 'p') {
+                        switch (p.team) {
+                            case Team.WHITE:
+                                whitePawnsCount += 1;
+                                break;
+                            case Team.BLACK:
+                                blackPawnsCount += 1;
+                                break;
+                        }
+                        
+                        if (whitePawnsCount > 0 && blackPawnsCount > 0) {
+                            return false;
+                        }
+                    }
+                }
+            }
+            
+            return true;
+        },
+        print: function () {
+            var x, y, line, c, p;
+            console.log("-----------------")
+            for (x = 0; x < 8; x += 1) {
+                line = "|";
+                for (y = 0; y < 8; y += 1) {
+                    p = this.cells[x][y];
+                    if (p) {
+                        if (p.team === Team.WHITE) {
+                            c = p.type.toUpperCase();
+                        } else {
+                            c = p.type;
+                        }
+                    }
+                    line += p ? c : ' ';
+                    line += '|';
+                }
+                console.log(line);
+                console.log("-----------------")
+            }
         }
     };
     exports.Board = Board;
-}(exports));
+} (exports));
