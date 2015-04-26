@@ -57,8 +57,26 @@
                     y,
                     piece;
 
-                // movement to 1 forward
                 x = myX;
+
+                // movement to 2 forward
+                if (d === 1) {
+                    if (myY === 1) {
+                        y = 3;
+                        if (!this.board.cells[x][y]) {
+                            moves.push({ x: x, y: y });
+                        }
+                    }
+                } else {
+                    if (myY === 6) {
+                        y = 4;
+                        if (!this.board.cells[x][y]) {
+                            moves.push({ x: x, y: y });
+                        }
+                    }
+                }
+
+                // movement to 1 forward
                 y = myY + d;
                 if (!this.board.cells[x][y]) {
                     moves.push({ x: x, y: y });
