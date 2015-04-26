@@ -4,12 +4,12 @@ var extend = require('./extend.js').extend,
     
     // Constants
     MINIMAX_DEPTH = 3,
-	DRAW_SCORE = 100000000,
-	PAWN_SCORE = [100, 120, 140, 170, 200, 230, Infinity],
-	KNIGHT_SCORE = 200,
-	QUEEN_SCORE = 500,
-	estimationCount = 0,
-	
+    DRAW_SCORE = 100000000,
+    PAWN_SCORE = [100, 120, 140, 170, 200, 230, Infinity],
+    KNIGHT_SCORE = 200,
+    QUEEN_SCORE = 500,
+    estimationCount = 0,
+    
     Team = {
         WHITE : 1,
         BLACK : -1
@@ -29,7 +29,7 @@ var extend = require('./extend.js').extend,
             onMove: function (state) {
                 console.log(state.board);
                 console.log("Generating a move...");
-				estimationCount = 0;
+                estimationCount = 0;
                 var board = new Board(state),
                     moves,
                     move;
@@ -40,7 +40,7 @@ var extend = require('./extend.js').extend,
                 //move = moves[Math.floor(Math.random() * moves.length)];
                 move = this.chooseMove(board);
                 this.last_move = move;
-				console.log("Number of estimations: " + estimationCount)
+                console.log("Number of estimations: " + estimationCount)
                 this.sendMove(move.from, move.to);
             },
             onGameOver: function (state) {
@@ -57,22 +57,22 @@ var extend = require('./extend.js').extend,
                     for (y = 0; y < 8; y += 1) {
                         p = board.cells[x][y];
                         if (p) {
-							if (p.type == 'p') { // Pawn
-								if (p.team === Team.WHITE) {
-									pawnDistance = y - 1;
-								} else {
-									pawnDistance = 6 - y;
-								}
-								score += p.team * PAWN_SCORE[pawnDistance];
-							} else if (p.type == 'n') {
-								score += p.team * KNIGHT_SCORE;
-							} else if (p.type == 'q') {
-								score += p.team * QUEEN_SCORE;
-							}
-						}
+                            if (p.type == 'p') { // Pawn
+                                if (p.team === Team.WHITE) {
+                                    pawnDistance = y - 1;
+                                } else {
+                                    pawnDistance = 6 - y;
+                                }
+                                score += p.team * PAWN_SCORE[pawnDistance];
+                            } else if (p.type == 'n') {
+                                score += p.team * KNIGHT_SCORE;
+                            } else if (p.type == 'q') {
+                                score += p.team * QUEEN_SCORE;
+                            }
+                        }
                     }
                 }
-				estimationCount += 1;
+                estimationCount += 1;
                 return score;
             },
             // returns a move
@@ -80,7 +80,7 @@ var extend = require('./extend.js').extend,
                 return this.minimax(board, MINIMAX_DEPTH).move;
             },
             
-			minimax : function (board, depth, alpha, beta) {
+            minimax : function (board, depth, alpha, beta) {
                 if (depth == 0 || board.isTerminal()) {
                     
                     if (depth == 0) {
