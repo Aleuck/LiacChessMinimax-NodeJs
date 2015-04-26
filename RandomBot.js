@@ -13,7 +13,7 @@
             },
             // Propriedades default e métodos
             {
-                name: "Felipe & Leuck's Random Bot",
+                name: "Random Bot",
                 onMove: function (state) {
                     console.log(state.board);
                     console.log("Generating a move...");
