@@ -64,14 +64,14 @@
                     if (myY === 1) {
                         y = 3;
                         if (!this.board.cells[x][y]) {
-                            moves.push({ x: x, y: y });
+                            moves.push({ x: x, y: y, enpassant: { x: x, y: 2 } });
                         }
                     }
                 } else {
                     if (myY === 6) {
                         y = 4;
                         if (!this.board.cells[x][y]) {
-                            moves.push({ x: x, y: y });
+                            moves.push({ x: x, y: y, enpassant: { x: x, y: 5 } });
                         }
                     }
                 }
@@ -221,6 +221,7 @@
             c = state.board,
             i = 0,
             x, y, ch, PieceType, team, piece;
+        this.enpassant = state.enpassant ? { x: state.enpassant[1], y: state.enpassant[0] } : false;
         for (y = 7; y >= 0; y -= 1) {
             for (x = 0; x < 8; x += 1) {
                 if (c[i] !== '.') {
@@ -248,6 +249,58 @@
                 var ms = piece.generate();
                 moves.push.apply(moves, ms.map(function (pos) { return { from: piece.position, to: pos }; }));
             });
+            if (this.enpassant) {
+                console.log('en passant!!!');
+                console.log(this.enpassant);
+                var piece, x = this.enpassant.x, y = this.enpassant.y;
+                if (y === 5) {
+                    // black pawn moved 2 squares check for white pawns who can capture it en passant
+                    y = 4;
+                    x += 1;
+                    if (x < 8) {
+                        console.log(x, y);
+                        piece = this.cells[x][y];
+                        if (piece && piece.type === 'p') {
+                            if (piece.team === Team.WHITE) {
+                                moves.push({ from: piece.position, to: this.enpassant, enpassant: true });
+                            }
+                        }
+                    }
+                    x -= 2;
+                    if (x >= 0) {
+                        console.log(x, y);
+                        piece = this.cells[x][y];
+                        if (piece && piece.type === 'p') {
+                            if (piece.team === Team.WHITE) {
+                                moves.push({ from: piece.position, to: this.enpassant, enpassant: true });
+                            }
+                        }
+                    }
+                } else {
+                    // white pawn moved 2 squares check for black pawns who can capture it en passant
+                    y = 3;
+                    x += 1;
+                    if (x < 8) {
+                        console.log(x, y);
+                        piece = this.cells[x][y];
+                        if (piece && piece.type === 'p') {
+                            if (piece.team === Team.BLACK) {
+                                moves.push({ from: piece.position, to: this.enpassant, enpassant: true });
+                            }
+                        }
+                    }
+                    x -= 2;
+                    if (x >= 0) {
+                        console.log(x, y);
+                        piece = this.cells[x][y];
+                        if (piece && piece.type === 'p') {
+                            if (piece.team === Team.BLACK) {
+                                moves.push({ from: piece.position, to: this.enpassant, enpassant: true });
+                            }
+                        }
+                    }
+                }
+            }
             return moves;
         },
         afterMove: function (move) {
@@ -271,6 +324,11 @@
             // Remove old piece from cells array
             delete newBoard.cells[move.from.x][move.from.y];
 
+            // Remove enpassant
+            if (move.enpassant) {
+                delete newBoard.cells[move.to.x][move.from.y];
+            }
+
             // Change player to opposite player
             newBoard.whoMoves = -this.whoMoves;
             newBoard.myPieces = [];
@@ -286,7 +344,10 @@
                     }
                 }
             }
-            
+
+            // movement generates an enpassant?
+            newBoard.enpassant = move.enpassant || false;
+
             return newBoard;
         },
         isTerminal : function () {
