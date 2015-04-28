@@ -38,11 +38,13 @@ var extend = require('./extend.js').extend,
                 }
                 //moves = board.generate();
                 //move = moves[Math.floor(Math.random() * moves.length)];
-                move = this.chooseMove(board);
+                var result = this.chooseMove(board);
+                move = result.move;
                 this.last_move = move;
                 console.log("Number of estimations: " + estimationCount);
                 console.log("Move from [" + move.from.x + "][" + move.from.y + "] "+
                                    "to [" + move.to.x   + "][" + move.to.y   + "]");
+                console.log("Path: " + result.path);
                 this.sendMove(move.from, move.to);
             },
             onGameOver: function (state) {
@@ -79,23 +81,29 @@ var extend = require('./extend.js').extend,
             },
             // returns a move
             chooseMove: function (board) {
-                return this.minimax(board, MINIMAX_DEPTH, -Infinity, Infinity).move;
+                var result = this.minimax(board, MINIMAX_DEPTH, -Infinity, Infinity);
+                return { move: result.move, path: result.path };
+            },
+            
+            moveToString: function (move) {
+                letter = ["a", "b", "c", "d", "e", "f", "g", "h"];
+                return "(" + letter[move.from.x] + (move.from.y + 1) + " -> " +
+                             letter[move.to.x]   + (move.to.y   + 1) + "). ";
             },
             
             minimax : function (board, depth, alpha, beta) {
                 if (depth == 0 || board.isTerminal()) {
                     
                     if (depth == 0) {
-                        //console.log("minimax depth end");
+                        return { value: this.estimateScore(board), move: null, path: "" };
                     } else {
-                        //console.log("board is terminal");
+                        return { value: this.estimateScore(board), move: null, path: "TERMINAL. " };
                     }
-                    
-                    return { value: this.estimateScore(board), move: null };
                 }
                 
                 var bestValue, val;
                 var bestMove = null;
+                var pathDeeper = "";
                 
                 if (board.whoMoves === Team.WHITE) {
                     // White moves, maximize value
@@ -111,7 +119,11 @@ var extend = require('./extend.js').extend,
                     }
                     var that = this;
                     possibleMoves.every(function (move) {
-                        val = that.minimax(board.afterMove(move), depth-1, alpha, beta).value;
+                        var result = that.minimax(board.afterMove(move), depth-1, alpha, beta);
+                        val = result.value;
+                        
+                        pathDeeper = result.path;
+                        
                         if (val > alpha) {
                             alpha = val;
                         }
@@ -144,7 +156,11 @@ var extend = require('./extend.js').extend,
                     }
                     var that = this;
                     possibleMoves.every(function (move) {
-                        val = that.minimax(board.afterMove(move), depth-1, alpha, beta).value;
+                        var result = that.minimax(board.afterMove(move), depth-1, alpha, beta);
+                        val = result.value;
+                        
+                        pathDeeper = result.path;
+                        
                         if (val < beta) {
                             beta = val;
                         }
@@ -165,7 +181,8 @@ var extend = require('./extend.js').extend,
                 }
                 
                 //console.log("a minimax chosen step successful");
-                return { value: bestValue, move: bestMove};
+                var pathCurrent = this.moveToString(bestMove) + pathDeeper;
+                return { value: bestValue, move: bestMove, path: pathCurrent};
             }
         }
     );
