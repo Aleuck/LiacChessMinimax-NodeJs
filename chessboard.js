@@ -16,18 +16,22 @@
     //////////////////////////////////////////////////
 
     // Construtor
-    function Piece() {
-        this.board = null;
-        this.team = null;
-        this.position = null;
+    function Piece(board, team, position) {
+        this.board = board;
+        this.team = team;
+        this.position = position;
     }
     // Propriedades default e métodos
     Piece.prototype = {
+        board: null,
+        team: null,
+        position: null,
+        type: '*',
         generate: function () {
             return [];
         },
         isOpponent: function (piece) {
-            return (piece.team === -this.team);
+            return (piece.team !== this.team);
         }
     };
 
@@ -40,11 +44,7 @@
         // Classe pai
         Piece,
         // Construtor
-        function (board, team, position) {
-            this.board = board;
-            this.team = team;
-            this.position = position;
-        },
+        function () {},
         // Propriedades default e métodos
         {
             'type' : 'p',
@@ -114,11 +114,7 @@
         // Classe pai
         Piece,
         // Construtor
-        function (board, team, position) {
-            this.board = board;
-            this.team = team;
-            this.position = position;
-        },
+        function () {},
         // Propriedades default e métodos
         {
             'type' : 'n',
@@ -156,11 +152,7 @@
         // Classe pai
         Piece,
         // Construtor
-        function (board, team, position) {
-            this.board = board;
-            this.team = team;
-            this.position = position;
-        },
+        function () {},
         // Propriedades default e métodos
         {
             'type' : 'q',
@@ -325,7 +317,7 @@
             delete newBoard.cells[move.from.x][move.from.y];
 
             // Remove enpassant
-            if (move.enpassant) {
+            if (move.enpassant && piece.type === 'p') {
                 delete newBoard.cells[move.to.x][move.from.y];
             }
 
@@ -393,9 +385,9 @@
         print: function () {
             var x, y, line, c, p;
             console.log("-----------------")
-            for (x = 0; x < 8; x += 1) {
+            for (y = 0; y < 8; y += 1) {
                 line = "|";
-                for (y = 0; y < 8; y += 1) {
+                for (x = 0; x < 8; x += 1) {
                     p = this.cells[x][y];
                     if (p) {
                         if (p.team === Team.WHITE) {
@@ -410,6 +402,13 @@
                 console.log(line);
                 console.log("-----------------")
             }
+            line = 'MyPieces: ';
+            for (x = 0; x < this.myPieces.length; x += 1 ) {
+                p = this.myPieces[x];
+                line += p.team === 1 ? p.type : p.type.toUpperCase();
+            }
+            console.log(line);
+            console.log("-----------------")
         }
     };
     exports.Board = Board;
