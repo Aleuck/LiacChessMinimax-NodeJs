@@ -2,7 +2,7 @@ var extend = require('./extend.js').extend,
     Board = require('./chessboard.js').Board,
 
     // Constants
-    MINIMAX_DEPTH = 4,
+    MINIMAX_DEPTH = 3,
     DRAW_SCORE = 100000000,
     PAWN_SCORE = [100, 120, 140, 170, 200, 230, Infinity],
     KNIGHT_SCORE = 200,
@@ -18,16 +18,11 @@ function chooseMove(board) {
     return minimax(board, MINIMAX_DEPTH, -Infinity, Infinity).move;
 }
 function minimax(board, depth, alpha, beta) {
-    if (depth == 0 || board.isTerminal()) {
-        if (depth == 0) {
-            //console.log("minimax depth end");
-        } else {
-            //console.log("board is terminal");
-        }
+    if (depth === 0 || board.isTerminal()) {
         return { value: estimateScore(board), move: null };
     }
 
-    var bestValue, val;
+    var bestValue;
     var bestMove = null;
 
     if (board.whoMoves === Team.WHITE) {
@@ -43,18 +38,16 @@ function minimax(board, depth, alpha, beta) {
             return { value: board.whoMoves * DRAW_SCORE, move: null };
         }
         possibleMoves.every(function (move) {
-            val = minimax(board.afterMove(move), depth-1, alpha, beta).value;
+            var val = minimax(board.afterMove(move), depth-1, alpha, beta).value;
             if (val > alpha) {
                 alpha = val;
             }
-            if (bestMove == null) {
+            if (bestMove === null) {
                 bestMove = move;
             }
             if (val > bestValue) {
                 bestValue = val;
-
-                if (move)
-                    bestMove = move;
+                bestMove = move;
             }
             if (beta <= alpha)
                 return false; // Break 'every' loop
@@ -75,18 +68,16 @@ function minimax(board, depth, alpha, beta) {
             return { value: board.whoMoves * DRAW_SCORE, move: null };
         }
         possibleMoves.every(function (move) {
-            val = minimax(board.afterMove(move), depth-1, alpha, beta).value;
+            var val = minimax(board.afterMove(move), depth-1, alpha, beta).value;
             if (val < beta) {
                 beta = val;
             }
-            if (bestMove == null) {
+            if (bestMove === null) {
                 bestMove = move;
             }
             if (val < bestValue) {
                 bestValue = val;
-
-                if (move)
-                    bestMove = move;
+                bestMove = move;
             }
             if (beta <= alpha)
                 return false; // Break 'every' loop
@@ -108,16 +99,16 @@ function estimateScore(board) {
         for (y = 0; y < 8; y += 1) {
             p = board.cells[x][y];
             if (p) {
-                if (p.type == 'p') { // Pawn
+                if (p.type === 'p') { // Pawn
                     if (p.team === Team.WHITE) {
                         pawnDistance = y - 1;
                     } else {
                         pawnDistance = 6 - y;
                     }
                     score += p.team * PAWN_SCORE[pawnDistance];
-                } else if (p.type == 'n') {
+                } else if (p.type === 'n') {
                     score += p.team * KNIGHT_SCORE;
-                } else if (p.type == 'q') {
+                } else if (p.type === 'q') {
                     score += p.team * QUEEN_SCORE;
                 }
             }
@@ -127,29 +118,23 @@ function estimateScore(board) {
     return score;
 }
 
-//////////////////////////////////////////////////
-// Main (para quando é executado diretamente)
-//////////////////////////////////////////////////
-
 function onMove(state) {
-    console.log("Generating a move... - child d_" + MINIMAX_DEPTH);
+    console.log("Generating a move... -- child with depth " + MINIMAX_DEPTH);
     estimationCount = 0;
     var board = new Board(state),
-        moves,
         move;
-    if (state.bad_move) {
-        console.log(state);
-    }
-    //moves = board.generate();
-    //move = moves[Math.floor(Math.random() * moves.length)];
+    lastMove = state.lastMove;
     move = chooseMove(board);
-    lastMove = move;
     console.log("Number of estimations: " + estimationCount);
     console.log("Move from [" + move.from.x + "][" + move.from.y + "] "+
                        "to [" + move.to.x   + "][" + move.to.y   + "]");
     move.bot = MINIMAX_DEPTH;
     process.send(move);
 }
+
+//////////////////////////////////////////////////
+// Main (para quando é executado diretamente)
+//////////////////////////////////////////////////
 
 function main() {
     if (process.argv[2]) {

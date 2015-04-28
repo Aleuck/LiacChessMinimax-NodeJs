@@ -4,7 +4,7 @@ var extend = require('./extend.js').extend,
 
     // Constants
     MINIMUM_DEPTH = 3,
-    MAXIMUM_DEPTH = 7;
+    MAXIMUM_DEPTH = 6,
 
     // class LLBotMulti extends LiacBot // (base_client)
     LLBotMulti = extend(
@@ -18,10 +18,6 @@ var extend = require('./extend.js').extend,
             this.turn = 1;
             var i;
             var that = this;
-            process.on('message', function (data) {
-                console.log('message');
-                console.log(data);
-            });
             this.startBots();
         },
         // Propriedades default e métodos
@@ -33,9 +29,8 @@ var extend = require('./extend.js').extend,
                 if (state.bad_move) {
                     console.log(state);
                 }
-                //moves = board.generate();
-                //move = moves[Math.floor(Math.random() * moves.length)];
-                //move = this.chooseMove(board);
+
+                state.lastMove = this.lastMove;
 
                 // inicia o timer
                 var onTimeout = this.onTimeout.bind(this);
@@ -49,12 +44,6 @@ var extend = require('./extend.js').extend,
                 for (i = MAXIMUM_DEPTH; i >= MINIMUM_DEPTH; i -= 1) {
                     this.bots[i].send(state);
                 }
-
-                // this.last_move = move;
-                // console.log("Number of estimations: " + estimationCount);
-                // console.log("Move from [" + move.from.x + "][" + move.from.y + "] "+
-                //                    "to [" + move.to.x   + "][" + move.to.y   + "]");
-                // this.sendMove(move.from, move.to);
             },
             onMessage: function (data) {
                     console.log('message');
@@ -76,8 +65,12 @@ var extend = require('./extend.js').extend,
                     }
                 }
                 this.sendMove(move.from, move.to);
+                this.lastMove = move;
                 this.killBots();
                 this.startBots();
+                console.log("Chosed move:")
+                console.log("Move from [" + move.from.x + "][" + move.from.y + "] "+
+                                   "to [" + move.to.x   + "][" + move.to.y   + "]");
             },
             killBots: function () {
                 for (i = MINIMUM_DEPTH; i <= MAXIMUM_DEPTH; i += 1) {
@@ -109,7 +102,7 @@ function main() {
         port,
         host;
     if (process.argv.indexOf("--help") !== -1) {
-        //console.log("Usage: node LLBot.js [-p PORT] [-h HOST]");
+        console.log("Usage: node LLBotMultiOrchestrator.js [-p PORT] [-h HOST]");
         process.exit();
     }
     if (portIdx > 0) {
