@@ -60,18 +60,16 @@
                 x = myX;
 
                 // movement to 2 forward
-                if (d === 1) {
+                if (d === 1) { // if white
                     if (myY === 1) {
-                        y = 3;
-                        if (!this.board.cells[x][y]) {
-                            moves.push({ x: x, y: y, enpassant: { x: x, y: 2 } });
+                        if (!this.board.cells[x][3]) {
+                            moves.push({ x: x, y: 3, enpassant: { x: x, y: 2 } });
                         }
                     }
                 } else {
                     if (myY === 6) {
-                        y = 4;
-                        if (!this.board.cells[x][y]) {
-                            moves.push({ x: x, y: y, enpassant: { x: x, y: 5 } });
+                        if (!this.board.cells[x][4]) {
+                            moves.push({ x: x, y: 4, enpassant: { x: x, y: 5 } });
                         }
                     }
                 }
@@ -299,19 +297,27 @@
 
             // Create new board (inherits from this board)
             var newBoard = Object.create(this);
-
+            //this.print();
             // Copy cells array
             newBoard.cells = this.cells.map(function(arr) {
-                return arr.slice();
+                return arr.map(function (p) {
+                    if (p) {
+                        var newPiece = Object.create(p);
+                        newPiece.board = newBoard;
+                        return newPiece;
+                    } else {
+                        return undefined;
+                    }
+                });
             });
 
             // Copy piece to be moved
             var piece = newBoard.cells[move.from.x][move.from.y];
-            var newPiece = Object.create(piece);
 
             // Place copied piece in new position
-            newPiece.position = { x: move.to.x, y: move.to.y };
-            newBoard.cells[move.to.x][move.to.y] = newPiece;
+            piece.position = { x: move.to.x, y: move.to.y };
+            piece.board = newBoard;
+            newBoard.cells[move.to.x][move.to.y] = piece;
 
             // Remove old piece from cells array
             delete newBoard.cells[move.from.x][move.from.y];
@@ -338,8 +344,9 @@
             }
 
             // movement generates an enpassant?
-            newBoard.enpassant = move.enpassant || false;
-
+            newBoard.enpassant = move.enpassant || null;
+            //newBoard.print();
+            //console.log("\n\n\n\n");
             return newBoard;
         },
         isTerminal : function () {
@@ -383,8 +390,8 @@
             return true;
         },
         print: function () {
-            var x, y, line, c, p;
-            console.log("-----------------")
+            var x, y, line, c, p, print;
+            print = "-----------------\n";
             for (y = 0; y < 8; y += 1) {
                 line = "|";
                 for (x = 0; x < 8; x += 1) {
@@ -399,16 +406,17 @@
                     line += p ? c : ' ';
                     line += '|';
                 }
-                console.log(line);
-                console.log("-----------------")
+                print += line;
+                print += "\n-----------------\n";
             }
             line = 'MyPieces: ';
             for (x = 0; x < this.myPieces.length; x += 1 ) {
                 p = this.myPieces[x];
                 line += p.team === 1 ? p.type : p.type.toUpperCase();
             }
-            console.log(line);
-            console.log("-----------------")
+            print += line;
+            print += "\n-----------------";
+            console.log(print);
         }
     };
     exports.Board = Board;
