@@ -6,6 +6,7 @@ var extend = require('./extend.js').extend,
     MINIMUM_DEPTH = 3,
     MAXIMUM_DEPTH = 6,
     BREAK_DRAW_SCORE = -1000,
+    BREAK_DRAW_SCORE_ENDGAME = -100,
 
     // class LLBotMulti extends LiacBot // (base_client)
     LLBotMulti = extend(
@@ -25,7 +26,9 @@ var extend = require('./extend.js').extend,
             name: "LLBotMulti",
             onMove: function (state) {
                 //console.log("Generating a move... (orchestrator)");
-                var randomFactor = 1;
+                var randomFactor = 0;
+                var breakDrawScore = 0;
+                
                 if (state.bad_move) {
                     console.log(state);
                 }
@@ -42,9 +45,21 @@ var extend = require('./extend.js').extend,
                 } else {
                     this.movesWithoutCapture = 0;
                 }
-
-                if (this.movesWithoutCapture > 30 && this.previousScore >= BREAK_DRAW_SCORE) {
+                
+                // Decide tolerance to break off from a draw cycle
+                if (this.pieceCount > 10) {
+                    breakDrawScore = BREAK_DRAW_SCORE;
+                } else {
+                    breakDrawScore = BREAK_DRAW_SCORE_ENDGAME;
+                }
+                
+                // Random factor
+                if (this.movesWithoutCapture < 20) {
+                    randomFactor = 0;
+                } else if (this.movesWithoutCapture < 30 && this.previousScore >= breakDrawScore) {
                     randomFactor = 1;
+                } else if (this.previousScore >= breakDrawScore) {
+                    randomFactor = (movesWithoutCapture - 20) * 15; // 100 to 300
                 }
 
                 // inicia o timer
