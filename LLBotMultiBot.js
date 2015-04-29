@@ -2,22 +2,29 @@ var extend = require('./extend.js').extend,
     Board = require('./chessboard.js').Board,
 
     // Constants
-    MINIMAX_DEPTH = 3,
     DRAW_SCORE = 100000000,
-    PAWN_SCORE = [100, 120, 140, 170, 200, 230, Infinity],
-    PAWN_COUNT_SCORE = [-Infinity, 0, 0, 0, 0, 0, 0, 0, 0], // Negative
-    KNIGHT_SCORE = 200,
+    
+    PAWN_SCORE = [100, 120, 140, 180, 230, 280, Infinity],
+    PAWN_COUNT_SCORE = [-Infinity, -250, -150, -100, -80, -60, -40, -20, -0], // Negative!
+    KNIGHT_SCORE = 220,
     QUEEN_SCORE = 500,
+    
+    CENTRAL_BONUS = 30,
+    OUR_TEAM_BONUS = 30,
+    
+    // Globals
+    minimaxDepth = 3,
     estimationCount = 0,
     lastMove = null;
     randomFactor = 1,
-
+    ourTeam = 0;
+    
     Team = {
         WHITE : 1,
         BLACK : -1
     };
 function chooseMove(board) {
-    return minimax(board, MINIMAX_DEPTH, -Infinity, Infinity);
+    return minimax(board, minimaxDepth, -Infinity, Infinity);
 }
 function minimax(board, depth, alpha, beta) {
     if (depth === 0 || board.isTerminal()) {
@@ -112,8 +119,20 @@ function estimateScore(board) {
                     score += p.team * PAWN_SCORE[pawnDistance];
                 } else if (p.type === 'n') {
                     score += p.team * KNIGHT_SCORE;
+                    if (x > 1 && x < 6 && y > 1 && y < 6) {
+                        score += p.team + CENTRAL_BONUS;
+                    }
+                    if (p.team === ourTeam) {
+                        score += p.team * OUR_TEAM_BONUS;
+                    }
                 } else if (p.type === 'q') {
                     score += p.team * QUEEN_SCORE;
+                    if (x > 1 && x < 6 && y > 1 && y < 6) {
+                        score += p.team * CENTRAL_BONUS;
+                    }
+                    if (p.team === ourTeam) {
+                        score += p.team * OUR_TEAM_BONUS;
+                    }
                 }
             }
         }
@@ -125,17 +144,18 @@ function estimateScore(board) {
 }
 
 function onMove(state) {
-    console.log("Generating a move... -- child with depth " + MINIMAX_DEPTH);
+    console.log("Generating a move... -- child with depth " + minimaxDepth);
     estimationCount = 0;
     var board = new Board(state),
         move;
     lastMove = state.lastMove;
+    ourTeam = state.who_moves;
     randomFactor = state.randomFactor;
     result = chooseMove(board);
     console.log("Number of estimations: " + estimationCount);
     console.log("Move from [" + result.move.from.x + "][" + result.move.from.y + "] "+
                        "to [" + result.move.to.x   + "][" + result.move.to.y   + "]");
-    result.bot = MINIMAX_DEPTH;
+    result.bot = minimaxDepth;
     process.send(result);
 }
 
@@ -145,7 +165,7 @@ function onMove(state) {
 
 function main() {
     if (process.argv[2]) {
-        MINIMAX_DEPTH = parseInt(process.argv[2], 10);
+        minimaxDepth = parseInt(process.argv[2], 10);
     }
     process.on('message', onMove)
 }
