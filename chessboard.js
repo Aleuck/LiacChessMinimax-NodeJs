@@ -44,7 +44,7 @@
         // Classe pai
         Piece,
         // Construtor
-        function () {},
+        null,
         // Propriedades default e métodos
         {
             'type' : 'p',
@@ -109,7 +109,7 @@
         // Classe pai
         Piece,
         // Construtor
-        function () {},
+        null,
         // Propriedades default e métodos
         {
             'type' : 'n',
@@ -147,13 +147,13 @@
         // Classe pai
         Piece,
         // Construtor
-        function () {},
+        null,
         // Propriedades default e métodos
         {
             'type' : 'q',
             '_gen' : function (x, y, xDir, yDir) {
-                var piece;
-                var myX = this.position.x,
+                var piece,
+                    myX = this.position.x,
                     myY = this.position.y;
                 x += xDir;
                 y += yDir;
@@ -293,23 +293,23 @@
         afterMove: function (move) {
 
             // Create new board (inherits from this board)
-            var newBoard = Object.create(this);
+            var newBoard = Object.create(this),
+                piece;
             //this.print();
             // Copy cells array
-            newBoard.cells = this.cells.map(function(arr) {
+            newBoard.cells = this.cells.map(function (arr) {
                 return arr.map(function (p) {
                     if (p) {
                         var newPiece = Object.create(p);
                         newPiece.board = newBoard;
                         return newPiece;
-                    } else {
-                        return undefined;
                     }
+                    return undefined;
                 });
             });
 
             // Copy piece to be moved
-            var piece = newBoard.cells[move.from.x][move.from.y];
+            piece = newBoard.cells[move.from.x][move.from.y];
 
             // Place copied piece in new position
             piece.position = { x: move.to.x, y: move.to.y };
@@ -347,43 +347,45 @@
             return newBoard;
         },
         isTerminal : function () {
-            var x, y, p, p1, p2;
+            var x, y, p, p1, p2,
+                blackPawnsCount,
+                whitePawnsCount;
             // Check pawns on first and last rows
             for (x = 0; x < 8; x += 1) {
-                
+
                 // Check pieces on first and last rows
                 p1 = this.cells[x][0];
                 p2 = this.cells[x][7];
-                
+
                 // If piece is a pawn, board is terminal
-                if ((p1 && p1.type == 'p') || (p2 && p2.type == 'p')) {
+                if ((p1 && p1.type === 'p') || (p2 && p2.type === 'p')) {
                     return true;
                 }
             }
-            
+
             // Check if either player has no more pawns
-            var blackPawnsCount = 0;
-            var whitePawnsCount = 0;
+            blackPawnsCount = 0;
+            whitePawnsCount = 0;
             for (x = 0; x < 8; x += 1) {
                 for (y = 0; y < 8; y += 1) {
                     p = this.cells[x][y];
-                    if (p && p.type == 'p') {
+                    if (p && p.type === 'p') {
                         switch (p.team) {
-                            case Team.WHITE:
-                                whitePawnsCount += 1;
-                                break;
-                            case Team.BLACK:
-                                blackPawnsCount += 1;
-                                break;
+                        case Team.WHITE:
+                            whitePawnsCount += 1;
+                            break;
+                        case Team.BLACK:
+                            blackPawnsCount += 1;
+                            break;
                         }
-                        
+
                         if (whitePawnsCount > 0 && blackPawnsCount > 0) {
                             return false;
                         }
                     }
                 }
             }
-            
+
             return true;
         },
         print: function () {
@@ -407,7 +409,7 @@
                 print += "\n-----------------\n";
             }
             line = 'MyPieces: ';
-            for (x = 0; x < this.myPieces.length; x += 1 ) {
+            for (x = 0; x < this.myPieces.length; x += 1) {
                 p = this.myPieces[x];
                 line += p.team === 1 ? p.type : p.type.toUpperCase();
             }
@@ -417,4 +419,4 @@
         }
     };
     exports.Board = Board;
-} (exports));
+}(exports));

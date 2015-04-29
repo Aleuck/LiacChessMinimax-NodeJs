@@ -1,3 +1,5 @@
+(function (exports){
+'use strict';
 var extend = require('./extend.js').extend,
     LiacBot = require('./base_client.js').LiacBot,
     child_process = require('child_process'),
@@ -6,10 +8,34 @@ var extend = require('./extend.js').extend,
     MINIMUM_DEPTH = 3,
     MAXIMUM_DEPTH = 6,
     BREAK_DRAW_SCORE = -1000,
-    BREAK_DRAW_SCORE_ENDGAME = -100,
+    BREAK_DRAW_SCORE_ENDGAME = -100;
+
+
+function moveToString(move) {
+    var alphabet = "abcdefgh";
+    return alphabet[move.from.x] + (move.from.y + 1) + "->" + alphabet[move.to.x] + (move.to.y + 1);
+}
+
+function formatBoardString(boardString) {
+    var formatedString = '', i;
+    for (i = 0; i < 63; i += 8) {
+        formatedString += boardString.slice(i, i + 8) + '\n';
+    }
+    return formatedString;
+}
+
+function countPieces(boardString) {
+    var dots = 0, i;
+    for (i = 0; i < boardString.length; i += 1) {
+        if (boardString[i] === '.') {
+            dots += 1;
+        }
+    }
+    return 64 - dots;
+}
 
     // class LLBotMulti extends LiacBot // (base_client)
-    LLBotMulti = extend(
+var LLBotMulti = extend(
         // Classe pai
         LiacBot,
         // Construtor
@@ -26,18 +52,19 @@ var extend = require('./extend.js').extend,
             name: "LLBotMulti",
             onMove: function (state) {
                 //console.log("Generating a move... (orchestrator)");
-                var randomFactor = 0;
-                var breakDrawScore = 0;
-                
+                var randomFactor = 0,
+                    breakDrawScore = 0,
+                    prevPieceCount,
+                    onTimeout,
+                    i;
+
                 if (state.bad_move) {
                     console.log(state);
                 }
 
-                this.team = state.who_moves;
-
                 state.lastMove = this.lastMove;
 
-                var prevPieceCount = this.pieceCount;
+                prevPieceCount = this.pieceCount;
                 this.pieceCount = countPieces(state.board);
 
                 if (prevPieceCount === this.pieceCount) {
@@ -45,41 +72,43 @@ var extend = require('./extend.js').extend,
                 } else {
                     this.movesWithoutCapture = 0;
                 }
-                
+
                 // Decide tolerance to break off from a draw cycle
                 if (this.pieceCount > 10) {
                     breakDrawScore = BREAK_DRAW_SCORE;
                 } else {
                     breakDrawScore = BREAK_DRAW_SCORE_ENDGAME;
                 }
-                
+
                 // Random factor
                 if (this.movesWithoutCapture < 20) {
                     randomFactor = 0;
                 } else if (this.movesWithoutCapture < 30 && this.previousScore >= breakDrawScore) {
                     randomFactor = 1;
                 } else if (this.previousScore >= breakDrawScore) {
-                    randomFactor = (movesWithoutCapture - 20) * 15; // 100 to 300
+                    randomFactor = (this.movesWithoutCapture - 20) * 15; // 100 to 300
                 }
 
                 // inicia o timer
-                var onTimeout = this.onTimeout.bind(this);
-                this.timer = setTimeout(onTimeout,5500);
+                onTimeout = this.onTimeout.bind(this);
+                this.timer = setTimeout(onTimeout, 5500);
 
                 // resetting moves
                 this.messages = [];
 
                 state.randomFactor = randomFactor;
+
                 // manda estado pros processos de bot
-                var i;
                 for (i = MAXIMUM_DEPTH; i >= MINIMUM_DEPTH; i -= 1) {
                     this.bots[i].send(state);
                 }
+                this.team = state.who_moves;
+                this.boardString = state.board;
             },
             onMessage: function (data) {
-                    console.log('message');
-                    console.log(data);
-                    this.messages[data.bot] = data;
+                //console.log('message');
+                //console.log(data);
+                this.messages[data.bot] = data;
             },
             onGameOver: function (state) {
                 console.log('Game Over');
@@ -87,8 +116,7 @@ var extend = require('./extend.js').extend,
                 console.log('---------');
             },
             onTimeout: function () {
-                var move, value, i;
-                console.log("time's up!");
+                var move, value, i, onTimeout, print;
                 for (i = MAXIMUM_DEPTH; i >= MINIMUM_DEPTH; i -= 1) {
                     if (this.messages[i]) {
                         move = this.messages[i].move;
@@ -96,23 +124,28 @@ var extend = require('./extend.js').extend,
                         break;
                     }
                 }
+                if (!move) {
+                    onTimeout = this.onTimeout.bind(this);
+                    this.timer = setTimeout(onTimeout, 5500);
+                    return;
+                }
                 this.sendMove(move.from, move.to);
                 this.lastMove = move;
                 this.previousScore = value;
                 this.killBots();
                 this.startBots();
-                console.log("Chosed move:")
-                console.log("Move from [" + move.from.x + "][" + move.from.y + "] "+
-                                   "to [" + move.to.x   + "][" + move.to.y   + "]");
+                print = '\n' + formatBoardString(this.boardString) + '\n' + moveToString(move) + '\n';
+                console.log(print);
             },
             killBots: function () {
+                var i;
                 for (i = MINIMUM_DEPTH; i <= MAXIMUM_DEPTH; i += 1) {
                     this.bots[i].kill();
                     this.bots[i] = null;
                 }
             },
             startBots: function () {
-                var onMessage = this.onMessage.bind(this);
+                var onMessage = this.onMessage.bind(this), i;
                 for (i = MINIMUM_DEPTH; i <= MAXIMUM_DEPTH; i += 1) {
                     this.bots[i] = child_process.fork(this.botName, [i]);
                     this.bots[i].on('message', onMessage);
@@ -122,16 +155,6 @@ var extend = require('./extend.js').extend,
     );
 exports.LLBotMulti = LLBotMulti;
 
-
-function countPieces(boardString) {
-    var dots = 0, i = 0;
-    for (; i < boardString.length; i += 1) {
-        if (boardString[i] === '.') {
-            dots += 1;
-        }
-    }
-    return 64 - dots;
-}
 
 //////////////////////////////////////////////////
 // Main (para quando é executado diretamente)
@@ -165,3 +188,4 @@ function main() {
 if (require.main === module) {
     main();
 }
+}(exports));
