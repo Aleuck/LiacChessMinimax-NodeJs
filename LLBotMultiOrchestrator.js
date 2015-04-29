@@ -5,6 +5,7 @@ var extend = require('./extend.js').extend,
     // Constants
     MINIMUM_DEPTH = 3,
     MAXIMUM_DEPTH = 6,
+    BREAK_DRAW_SCORE = -1000,
 
     // class LLBotMulti extends LiacBot // (base_client)
     LLBotMulti = extend(
@@ -15,30 +16,45 @@ var extend = require('./extend.js').extend,
             this.botName = botName;
             this.lastMove = null;
             this.bots = [];
-            this.turn = 1;
-            var i;
-            var that = this;
+            this.previousScore = 0;
+            this.pieceCount = 0;
             this.startBots();
         },
         // Propriedades default e métodos
         {
             name: "LLBotMulti",
             onMove: function (state) {
-                console.log("Generating a move... (orchestrator)");
-                estimationCount = 0;
+                //console.log("Generating a move... (orchestrator)");
+                var randomFactor = 1;
                 if (state.bad_move) {
                     console.log(state);
                 }
 
+                this.team = state.who_moves;
+
                 state.lastMove = this.lastMove;
+
+                var prevPieceCount = this.pieceCount;
+                this.pieceCount = countPieces(state.board);
+
+                if (prevPieceCount === this.pieceCount) {
+                    this.movesWithoutCapture += 1;
+                } else {
+                    this.movesWithoutCapture = 0;
+                }
+
+                if (this.movesWithoutCapture > 30 && this.previousScore >= BREAK_DRAW_SCORE) {
+                    randomFactor = 1;
+                }
 
                 // inicia o timer
                 var onTimeout = this.onTimeout.bind(this);
-                setTimeout(onTimeout,5500);
+                this.timer = setTimeout(onTimeout,5500);
 
                 // resetting moves
-                this.moves = [];
+                this.messages = [];
 
+                state.randomFactor = randomFactor;
                 // manda estado pros processos de bot
                 var i;
                 for (i = MAXIMUM_DEPTH; i >= MINIMUM_DEPTH; i -= 1) {
@@ -48,7 +64,7 @@ var extend = require('./extend.js').extend,
             onMessage: function (data) {
                     console.log('message');
                     console.log(data);
-                    this.moves[data.bot] = data;
+                    this.messages[data.bot] = data;
             },
             onGameOver: function (state) {
                 console.log('Game Over');
@@ -56,16 +72,18 @@ var extend = require('./extend.js').extend,
                 console.log('---------');
             },
             onTimeout: function () {
-                var move, i;
+                var move, value, i;
                 console.log("time's up!");
                 for (i = MAXIMUM_DEPTH; i >= MINIMUM_DEPTH; i -= 1) {
-                    if (this.moves[i]) {
-                        move = this.moves[i];
+                    if (this.messages[i]) {
+                        move = this.messages[i].move;
+                        value = this.team * this.messages[i].value;
                         break;
                     }
                 }
                 this.sendMove(move.from, move.to);
                 this.lastMove = move;
+                this.previousScore = value;
                 this.killBots();
                 this.startBots();
                 console.log("Chosed move:")
@@ -90,6 +108,15 @@ var extend = require('./extend.js').extend,
 exports.LLBotMulti = LLBotMulti;
 
 
+function countPieces(boardString) {
+    var dots = 0, i = 0;
+    for (; i < boardString.length; i += 1) {
+        if (boardString[i] === '.') {
+            dots += 1;
+        }
+    }
+    return 64 - dots;
+}
 
 //////////////////////////////////////////////////
 // Main (para quando é executado diretamente)

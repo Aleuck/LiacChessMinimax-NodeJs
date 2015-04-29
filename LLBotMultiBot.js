@@ -5,17 +5,19 @@ var extend = require('./extend.js').extend,
     MINIMAX_DEPTH = 3,
     DRAW_SCORE = 100000000,
     PAWN_SCORE = [100, 120, 140, 170, 200, 230, Infinity],
+    PAWN_COUNT_SCORE = [-Infinity, 0, 0, 0, 0, 0, 0, 0, 0], // Negative
     KNIGHT_SCORE = 200,
     QUEEN_SCORE = 500,
     estimationCount = 0,
     lastMove = null;
+    randomFactor = 1,
 
     Team = {
         WHITE : 1,
         BLACK : -1
     };
 function chooseMove(board) {
-    return minimax(board, MINIMAX_DEPTH, -Infinity, Infinity).move;
+    return minimax(board, MINIMAX_DEPTH, -Infinity, Infinity);
 }
 function minimax(board, depth, alpha, beta) {
     if (depth === 0 || board.isTerminal()) {
@@ -94,7 +96,7 @@ function estimateScore(board) {
     var score = 0;
 
     // Counts number of white pieces minus black pieces
-    var x, y, p, pawnDistance;
+    var x, y, p, pawnDistance, nWhitePawns = 0, nBlackPawns = 0;
     for (x = 0; x < 8; x += 1) {
         for (y = 0; y < 8; y += 1) {
             p = board.cells[x][y];
@@ -102,8 +104,10 @@ function estimateScore(board) {
                 if (p.type === 'p') { // Pawn
                     if (p.team === Team.WHITE) {
                         pawnDistance = y - 1;
+                        nWhitePawns += 1;
                     } else {
                         pawnDistance = 6 - y;
+                        nBlackPawns += 1;
                     }
                     score += p.team * PAWN_SCORE[pawnDistance];
                 } else if (p.type === 'n') {
@@ -114,8 +118,10 @@ function estimateScore(board) {
             }
         }
     }
+    score += PAWN_COUNT_SCORE[nWhitePawns];
+    score -= PAWN_COUNT_SCORE[nBlackPawns];
     estimationCount += 1;
-    return score;
+    return score + (Math.random() * 2 - 1) * randomFactor;
 }
 
 function onMove(state) {
@@ -124,12 +130,13 @@ function onMove(state) {
     var board = new Board(state),
         move;
     lastMove = state.lastMove;
-    move = chooseMove(board);
+    randomFactor = state.randomFactor;
+    result = chooseMove(board);
     console.log("Number of estimations: " + estimationCount);
-    console.log("Move from [" + move.from.x + "][" + move.from.y + "] "+
-                       "to [" + move.to.x   + "][" + move.to.y   + "]");
-    move.bot = MINIMAX_DEPTH;
-    process.send(move);
+    console.log("Move from [" + result.move.from.x + "][" + result.move.from.y + "] "+
+                       "to [" + result.move.to.x   + "][" + result.move.to.y   + "]");
+    result.bot = MINIMAX_DEPTH;
+    process.send(result);
 }
 
 //////////////////////////////////////////////////
