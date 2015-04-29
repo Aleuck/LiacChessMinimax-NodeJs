@@ -49,8 +49,7 @@
         {
             'type' : 'p',
             'generate' : function () {
-                var moves = [],
-                    myX = this.position.x,
+                var myX = this.position.x,
                     myY = this.position.y,
                     d = this.team,
                     x,
@@ -63,13 +62,13 @@
                 if (d === 1) { // if white
                     if (myY === 1) {
                         if (!this.board.cells[x][3]) {
-                            moves.push({ x: x, y: 3, enpassant: { x: x, y: 2 } });
+                            this.board.moves.unshift({ from: { x: myX, y: myY }, to: {x: x, y: 3}, enpassant: { x: x, y: 2 } });
                         }
                     }
                 } else {
                     if (myY === 6) {
                         if (!this.board.cells[x][4]) {
-                            moves.push({ x: x, y: 4, enpassant: { x: x, y: 5 } });
+                            this.board.moves.unshift({ from: { x: myX, y: myY }, to: {x: x, y: 4}, enpassant: { x: x, y: 5 } });
                         }
                     }
                 }
@@ -77,7 +76,7 @@
                 // movement to 1 forward
                 y = myY + d;
                 if (!this.board.cells[x][y]) {
-                    moves.push({ x: x, y: y });
+                    this.board.moves.unshift({from: { x: myX, y: myY }, to: { x: x, y: y }});
                 }
 
                 // normal capture to right
@@ -85,7 +84,7 @@
                 if (insideBoard(x, y)) {
                     piece = this.board.cells[x][y];
                     if (piece && this.isOpponent(piece)) {
-                        moves.push({ x: x, y: y });
+                        this.board.moves.unshift({from: { x: myX, y: myY }, to: { x: x, y: y }});
                     }
                 }
 
@@ -94,11 +93,9 @@
                 if (insideBoard(x, y)) {
                     piece = this.board.cells[x][y];
                     if (piece && this.isOpponent(piece)) {
-                        moves.push({ x: x, y: y });
+                        this.board.moves.unshift({from: { x: myX, y: myY }, to: { x: x, y: y }});
                     }
                 }
-
-                return moves;
             }
         }
     );
@@ -116,28 +113,28 @@
         // Propriedades default e métodos
         {
             'type' : 'n',
-            '_gen' : function (moves, x, y) {
+            '_gen' : function (x, y) {
                 // if valid position
                 if (insideBoard(x, y)) {
                     var piece = this.board.cells[x][y];
-                    if (!piece || this.isOpponent(piece)) {
-                        moves.push({ x: x, y: y });
+                    if (!piece) {
+                        this.board.moves.push({from: { x: this.position.x, y: this.position.y }, to: { x: x, y: y }});
+                    } else if (this.isOpponent(piece)) {
+                        this.board.moves.unshift({from: { x: this.position.x, y: this.position.y }, to: { x: x, y: y }});
                     }
                 }
             },
             'generate' : function () {
-                var moves = [],
-                    myX = this.position.x,
+                var myX = this.position.x,
                     myY = this.position.y;
-                this._gen(moves, myX + 1, myY + 2);
-                this._gen(moves, myX + 1, myY - 2);
-                this._gen(moves, myX - 1, myY + 2);
-                this._gen(moves, myX - 1, myY - 2);
-                this._gen(moves, myX + 2, myY + 1);
-                this._gen(moves, myX + 2, myY - 1);
-                this._gen(moves, myX - 2, myY + 1);
-                this._gen(moves, myX - 2, myY - 1);
-                return moves;
+                this._gen(myX + 1, myY + 2);
+                this._gen(myX + 1, myY - 2);
+                this._gen(myX - 1, myY + 2);
+                this._gen(myX - 1, myY - 2);
+                this._gen(myX + 2, myY + 1);
+                this._gen(myX + 2, myY - 1);
+                this._gen(myX - 2, myY + 1);
+                this._gen(myX - 2, myY - 1);
             }
         }
     );
@@ -154,8 +151,10 @@
         // Propriedades default e métodos
         {
             'type' : 'q',
-            '_gen' : function (moves, x, y, xDir, yDir) {
+            '_gen' : function (x, y, xDir, yDir) {
                 var piece;
+                var myX = this.position.x,
+                    myY = this.position.y;
                 x += xDir;
                 y += yDir;
                 // While inside board
@@ -164,30 +163,28 @@
                     piece = this.board.cells[x][y];
                     if (piece) {
                         if (this.isOpponent(piece)) {
-                            moves.push({ x: x, y: y });
+                            this.board.moves.unshift({from: { x: myX, y: myY }, to: { x: x, y: y }});
                         }
                         break;
                     }
                     // Add free position, go to next position
-                    moves.push({ x: x, y: y });
+                    this.board.moves.push({from: { x: myX, y: myY }, to: { x: x, y: y }});
                     x += xDir;
                     y += yDir;
                 }
             },
             'generate' : function () {
-                var moves = [],
-                    myX = this.position.x,
+                var myX = this.position.x,
                     myY = this.position.y;
                 // Eight directions, counter-clockwise
-                this._gen(moves, myX, myY,  1,  0);
-                this._gen(moves, myX, myY,  1,  1);
-                this._gen(moves, myX, myY,  0,  1);
-                this._gen(moves, myX, myY, -1,  1);
-                this._gen(moves, myX, myY, -1,  0);
-                this._gen(moves, myX, myY, -1, -1);
-                this._gen(moves, myX, myY,  0, -1);
-                this._gen(moves, myX, myY,  1, -1);
-                return moves;
+                this._gen(myX, myY,  1,  0);
+                this._gen(myX, myY,  1,  1);
+                this._gen(myX, myY,  0,  1);
+                this._gen(myX, myY, -1,  1);
+                this._gen(myX, myY, -1,  0);
+                this._gen(myX, myY, -1, -1);
+                this._gen(myX, myY,  0, -1);
+                this._gen(myX, myY,  1, -1);
             }
         }
     );
@@ -202,6 +199,7 @@
         this.cells = [[], [], [], [], [], [], [], []];
         this.whoMoves = state.who_moves;
         this.myPieces = [];
+        this.moves = [];
         var PIECES = {
             p: Pawn,
             q: Queen,
@@ -234,35 +232,34 @@
             return (!this.cells[pos.x][pos.y]);
         },
         generate: function () {
-            var moves = [];
+            this.moves = [];
             this.myPieces.forEach(function (piece) {
-                var ms = piece.generate();
-                moves.push.apply(moves, ms.map(function (pos) { return { from: piece.position, to: pos }; }));
+                piece.generate();
             });
             if (this.enpassant) {
-                console.log('en passant!!!');
-                console.log(this.enpassant);
+                //console.log('en passant!!!');
+                //console.log(this.enpassant);
                 var piece, x = this.enpassant.x, y = this.enpassant.y;
                 if (y === 5) {
                     // black pawn moved 2 squares check for white pawns who can capture it en passant
                     y = 4;
                     x += 1;
                     if (x < 8) {
-                        console.log(x, y);
+                        //console.log(x, y);
                         piece = this.cells[x][y];
                         if (piece && piece.type === 'p') {
                             if (piece.team === Team.WHITE) {
-                                moves.push({ from: piece.position, to: this.enpassant, enpassant: true });
+                                this.moves.unshift({ from: piece.position, to: this.enpassant, enpassant: true });
                             }
                         }
                     }
                     x -= 2;
                     if (x >= 0) {
-                        console.log(x, y);
+                        //console.log(x, y);
                         piece = this.cells[x][y];
                         if (piece && piece.type === 'p') {
                             if (piece.team === Team.WHITE) {
-                                moves.push({ from: piece.position, to: this.enpassant, enpassant: true });
+                                this.moves.unshift({ from: piece.position, to: this.enpassant, enpassant: true });
                             }
                         }
                     }
@@ -271,27 +268,27 @@
                     y = 3;
                     x += 1;
                     if (x < 8) {
-                        console.log(x, y);
+                        //console.log(x, y);
                         piece = this.cells[x][y];
                         if (piece && piece.type === 'p') {
                             if (piece.team === Team.BLACK) {
-                                moves.push({ from: piece.position, to: this.enpassant, enpassant: true });
+                                this.moves.unshift({ from: piece.position, to: this.enpassant, enpassant: true });
                             }
                         }
                     }
                     x -= 2;
                     if (x >= 0) {
-                        console.log(x, y);
+                        //console.log(x, y);
                         piece = this.cells[x][y];
                         if (piece && piece.type === 'p') {
                             if (piece.team === Team.BLACK) {
-                                moves.push({ from: piece.position, to: this.enpassant, enpassant: true });
+                                this.moves.unshift({ from: piece.position, to: this.enpassant, enpassant: true });
                             }
                         }
                     }
                 }
             }
-            return moves;
+            return this.moves;
         },
         afterMove: function (move) {
 
