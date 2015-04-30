@@ -6,7 +6,7 @@ var extend = require('./extend.js').extend,
 
     // Constants
     MINIMUM_DEPTH = 3,
-    MAXIMUM_DEPTH = 6,
+    MAXIMUM_DEPTH = 5,
     BREAK_DRAW_SCORE = -1000,
     BREAK_DRAW_SCORE_ENDGAME = -100;
 
@@ -134,7 +134,8 @@ var LLBotMulti = extend(
                 this.previousScore = value;
                 this.killBots();
                 this.startBots();
-                print = '\n' + formatBoardString(this.boardString) + '\n' + moveToString(move) + '\n';
+                print = '\n' + formatBoardString(this.boardString) + '\n' + moveToString(move);
+                print += ' (' + i + ', ' + value + ')\n';
                 console.log(print);
             },
             killBots: function () {
