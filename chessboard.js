@@ -58,25 +58,24 @@
 
                 x = myX;
 
-                // movement to 2 forward
-                if (d === 1) { // if white
-                    if (myY === 1) {
-                        if (!this.board.cells[x][3]) {
-                            this.board.moves.unshift({ from: { x: myX, y: myY }, to: {x: x, y: 3}, enpassant: { x: x, y: 2 } });
-                        }
-                    }
-                } else {
-                    if (myY === 6) {
-                        if (!this.board.cells[x][4]) {
-                            this.board.moves.unshift({ from: { x: myX, y: myY }, to: {x: x, y: 4}, enpassant: { x: x, y: 5 } });
-                        }
-                    }
-                }
-
                 // movement to 1 forward
                 y = myY + d;
                 if (!this.board.cells[x][y]) {
+                    // movement to 2 forward
                     this.board.moves.unshift({from: { x: myX, y: myY }, to: { x: x, y: y }});
+                    if (d === 1) { // if white
+                        if (myY === 1) {
+                            if (!this.board.cells[x][3]) {
+                                this.board.moves.unshift({ from: { x: myX, y: myY }, to: {x: x, y: 3}, enpassant: { x: x, y: 2 } });
+                            }
+                        }
+                    } else {
+                        if (myY === 6) {
+                            if (!this.board.cells[x][4]) {
+                                this.board.moves.unshift({ from: { x: myX, y: myY }, to: {x: x, y: 4}, enpassant: { x: x, y: 5 } });
+                            }
+                        }
+                    }
                 }
 
                 // normal capture to right
