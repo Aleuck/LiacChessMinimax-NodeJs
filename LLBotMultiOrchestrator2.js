@@ -114,6 +114,13 @@ var LLBotMulti = extend(
                 console.log('Game Over');
                 console.log(state);
                 console.log('---------');
+                if (state.draw) {
+                    console.log("DRAW... =|");
+                } else if (this.team === state.winner) {
+                    console.log("WIN! =D");
+                } else {
+                    console.log("LOST... =(");
+                }
             },
             onTimeout: function () {
                 var move, value, i, onTimeout, print;
