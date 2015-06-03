@@ -162,7 +162,7 @@ exports.LLBotMulti = LLBotMulti;
 //////////////////////////////////////////////////
 
 function main() {
-    var bot = new LLBotMulti('LLBotMultiBot'),
+    var bot = new LLBotMulti('LLBotMultiBot2'),
         portIdx = process.argv.indexOf("-p"),
         hostIdx = process.argv.indexOf("-h"),
         port,
