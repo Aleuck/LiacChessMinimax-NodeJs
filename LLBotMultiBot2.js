@@ -12,7 +12,7 @@ var extend = require('./extend.js').extend,
     QUEEN_SCORE = 500,
 
     CENTRAL_BONUS = 30,
-    OUR_TEAM_BONUS = 30,
+    OUR_TEAM_BONUS = 40,
 
     // Globals
     minimaxDepth = 3,

@@ -6,7 +6,7 @@ var extend = require('./extend.js').extend,
 
     // Constants
     MINIMUM_DEPTH = 3,
-    MAXIMUM_DEPTH = 5,
+    MAXIMUM_DEPTH = 6,
     BREAK_DRAW_SCORE = -1000,
     BREAK_DRAW_SCORE_ENDGAME = -100;
 
@@ -49,7 +49,7 @@ var LLBotMulti = extend(
         },
         // Propriedades default e métodos
         {
-            name: "LLBotMulti",
+            name: "LLBotMulti2",
             onMove: function (state) {
                 //console.log("Generating a move... (orchestrator)");
                 var randomFactor = 0,
@@ -91,7 +91,7 @@ var LLBotMulti = extend(
 
                 // inicia o timer
                 onTimeout = this.onTimeout.bind(this);
-                this.timer = setTimeout(onTimeout, 5500);
+                this.timer = setTimeout(onTimeout, 5700);
 
                 // resetting moves
                 this.messages = [];
