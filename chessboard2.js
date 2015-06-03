@@ -54,6 +54,9 @@
         isEmpty: function (pos) {
             return (!this.cells[pos.x][pos.y]);
         },
+        isOpponent: function (piece) {
+            return (pieceTeam(piece) !== this.whoMoves);
+        },
         pieceGenerate: function (piece, x, y) {
             switch(pieceType(piece)) {
                 case 'p':
@@ -165,18 +168,19 @@
             return newBoard;
         },
         isTerminal : function () {
-            var x, y, p, p1, p2,
+            var x, y, piece, piece1, piece2,
                 blackPawnsCount,
                 whitePawnsCount;
             // Check pawns on first and last rows
             for (x = 0; x < 8; x += 1) {
 
                 // Check pieces on first and last rows
-                p1 = this.cells[x][0];
-                p2 = this.cells[x][7];
+                piece1 = this.cells[x][0];
+                piece2 = this.cells[x][7];
 
                 // If piece is a pawn, board is terminal
-                if ((p1 && p1.type === 'p') || (p2 && p2.type === 'p')) {
+                if ((piece1 && pieceType(piece1) === 'p') ||
+                    (piece2 && pieceType(piece2) == 'p')) {
                     return true;
                 }
             }
@@ -186,9 +190,9 @@
             whitePawnsCount = 0;
             for (x = 0; x < 8; x += 1) {
                 for (y = 0; y < 8; y += 1) {
-                    p = this.cells[x][y];
-                    if (p && p.type === 'p') {
-                        switch (p.team) {
+                    piece = this.cells[x][y];
+                    if (piece && pieceType(piece)) {
+                        switch (pieceTeam(piece)) {
                         case Team.WHITE:
                             whitePawnsCount += 1;
                             break;
@@ -231,7 +235,7 @@
 
         pawnGenerate: function (myX, myY) {
             var x, y,
-                d = this.team,
+                d = this.whoMoves,
                 piece;
 
             x = myX;

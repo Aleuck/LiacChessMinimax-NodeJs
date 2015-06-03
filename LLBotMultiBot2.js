@@ -1,7 +1,7 @@
 (function () {
 'use strict';
 var extend = require('./extend.js').extend,
-    Board = require('./chessboard.js').Board,
+    Board = require('./chessboard2.js').Board,
 
     // Constants
     DRAW_SCORE = 100000000,
@@ -97,7 +97,7 @@ function minimax(board, depth, alpha, beta) {
 
         // Generate all possible moves
         possibleMoves = board.generate();
-
+        
         // No possible moves, draw.
         if (possibleMoves.length === 0) {
             //console.log("no moves for white");
@@ -127,7 +127,7 @@ function minimax(board, depth, alpha, beta) {
 
         // Generate all possible moves
         possibleMoves = board.generate();
-
+        
         // No possible moves, draw.
         if (possibleMoves.length === 0) {
             //console.log("no moves for black");
