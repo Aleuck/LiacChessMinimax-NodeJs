@@ -9,6 +9,8 @@ var extend = require('./extend.js').extend,
     PAWN_SCORE = [100, 120, 140, 180, 230, 280, Infinity],
     PAWN_COUNT_SCORE = [-Infinity, -250, -150, -100, -80, -60, -40, -20, -0], // Negative!
     KNIGHT_SCORE = 220,
+    BISHOP_SCORE = 220,
+    ROOK_SCORE = 300,
     QUEEN_SCORE = 500,
 
     CENTRAL_BONUS = 30,
@@ -29,6 +31,8 @@ var extend = require('./extend.js').extend,
 function pieceType(piece) { // ADJUST IN BOTH FILES WHEN ADDING NEW PIECES
     if (piece === 'P') return 'p';
     if (piece === 'Q') return 'q';
+    if (piece === 'R') return 'r';
+    if (piece === 'B') return 'b';
     if (piece === 'N') return 'n';
     return piece;
 }
@@ -59,7 +63,23 @@ function estimateScore(board) {
                 } else if (pType === 'n') { // Knight
                     score += pTeam * KNIGHT_SCORE;
                     if (x > 1 && x < 6 && y > 1 && y < 6) {
-                        score += pTeam + CENTRAL_BONUS;
+                        score += pTeam * CENTRAL_BONUS;
+                    }
+                    if (pTeam === ourTeam) {
+                        score += pTeam * OUR_TEAM_BONUS;
+                    }
+                } else if (pType === 'b') { // Knight
+                    score += pTeam * BISHOP_SCORE;
+                    if (x > 1 && x < 6 && y > 1 && y < 6) {
+                        score += pTeam * CENTRAL_BONUS;
+                    }
+                    if (pTeam === ourTeam) {
+                        score += pTeam * OUR_TEAM_BONUS;
+                    }
+                } else if (pType === 'r') { // Knight
+                    score += pTeam * ROOK_SCORE;
+                    if (x > 1 && x < 6 && y > 1 && y < 6) {
+                        score += pTeam * CENTRAL_BONUS;
                     }
                     if (pTeam === ourTeam) {
                         score += pTeam * OUR_TEAM_BONUS;

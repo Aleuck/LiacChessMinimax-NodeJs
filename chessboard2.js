@@ -13,6 +13,8 @@
     function pieceType(piece) { // ADJUST IN BOTH FILES WHEN ADDING NEW PIECES
         if (piece === 'P') return 'p';
         if (piece === 'Q') return 'q';
+        if (piece === 'R') return 'r';
+        if (piece === 'B') return 'b';
         if (piece === 'N') return 'n';
         return piece;
     }
@@ -58,12 +60,18 @@
             return (pieceTeam(piece) !== this.whoMoves);
         },
         pieceGenerate: function (piece, x, y) {
-            switch(pieceType(piece)) {
+            switch (pieceType(piece)) {
                 case 'p':
                     this.pawnGenerate(x, y);
                     break;
                 case 'n':
                     this.knightGenerate(x, y);
+                    break;
+                case 'b':
+                    this.bishopGenerate(x, y);
+                    break;
+                case 'r':
+                    this.rookGenerate(x, y);
                     break;
                 case 'q':
                     this.queenGenerate(x, y);
@@ -99,7 +107,7 @@
                         //console.log(x, y);
                         piece = this.cells[x][y];
                         if (piece === 'P') { // White pawn
-                            this.moves.unshift({ from: { x : x, y : y }, to: this.enpassant, enpassant: true });
+                            this.moves.unshift({ from: { x : x, y : y }, to: this.enpassant, enpassantCapture: true });
                         }
                     }
                     x -= 2;
@@ -107,7 +115,7 @@
                         //console.log(x, y);
                         piece = this.cells[x][y];
                         if (piece === 'P') { // White pawn
-                            this.moves.unshift({ from: { x : x, y : y }, to: this.enpassant, enpassant: true });
+                            this.moves.unshift({ from: { x : x, y : y }, to: this.enpassant, enpassantCapture: true });
                         }
                     }
                 } else {
@@ -118,7 +126,7 @@
                         //console.log(x, y);
                         piece = this.cells[x][y];
                         if (piece === 'p') { // Black pawn
-                            this.moves.unshift({ from: { x : x, y : y }, to: this.enpassant, enpassant: true });
+                            this.moves.unshift({ from: { x : x, y : y }, to: this.enpassant, enpassantCapture: true });
                         }
                     }
                     x -= 2;
@@ -126,7 +134,7 @@
                         //console.log(x, y);
                         piece = this.cells[x][y];
                         if (piece === 'p') { // Black pawn
-                            this.moves.unshift({ from: { x : x, y : y }, to: this.enpassant, enpassant: true });
+                            this.moves.unshift({ from: { x : x, y : y }, to: this.enpassant, enpassantCapture: true });
                         }
                     }
                 }
@@ -154,7 +162,7 @@
             delete newBoard.cells[move.from.x][move.from.y];
             
             // Remove enpassant
-            if (move.enpassant && pieceType(piece) === 'p') {
+            if (move.enpassantCapture && pieceType(piece) === 'p') {
                 // Remove a peça da coluna para onde ela foi, na linha onde a peça estava
                 delete newBoard.cells[move.to.x][move.from.y];
             }
@@ -226,9 +234,9 @@
             }
             console.log(print);
         },
-        
-        
-        
+
+
+
         //////////////////////////////////////////////////
         // Classe Pawn
         //////////////////////////////////////////////////
@@ -308,13 +316,11 @@
             this.knightGen(myX, myY, myX - 2, myY - 1);
         },
 
-
-
         //////////////////////////////////////////////////
         // Classe Queen
         //////////////////////////////////////////////////
 
-        queenGen: function (myX, myY, xDir, yDir) {
+        dirGen: function (myX, myY, xDir, yDir) {
             var x = myX,
                 y = myY,
                 piece;
@@ -340,19 +346,35 @@
             }
         },
 
+        rookGenerate: function (myX, myY) {
+            // Eight directions, counter-clockwise
+            this.dirGen(myX, myY,  1,  0);
+            this.dirGen(myX, myY,  0,  1);
+            this.dirGen(myX, myY, -1,  0);
+            this.dirGen(myX, myY,  0, -1);
+        },
+
+        bishopGenerate: function (myX, myY) {
+            // Eight directions, counter-clockwise
+            this.dirGen(myX, myY,  1,  1);
+            this.dirGen(myX, myY, -1,  1);
+            this.dirGen(myX, myY, -1, -1);
+            this.dirGen(myX, myY,  1, -1);
+        },
+
         queenGenerate: function (myX, myY) {
             // Eight directions, counter-clockwise
-            this.queenGen(myX, myY,  1,  0);
-            this.queenGen(myX, myY,  1,  1);
-            this.queenGen(myX, myY,  0,  1);
-            this.queenGen(myX, myY, -1,  1);
-            this.queenGen(myX, myY, -1,  0);
-            this.queenGen(myX, myY, -1, -1);
-            this.queenGen(myX, myY,  0, -1);
-            this.queenGen(myX, myY,  1, -1);
+            this.dirGen(myX, myY,  1,  0);
+            this.dirGen(myX, myY,  1,  1);
+            this.dirGen(myX, myY,  0,  1);
+            this.dirGen(myX, myY, -1,  1);
+            this.dirGen(myX, myY, -1,  0);
+            this.dirGen(myX, myY, -1, -1);
+            this.dirGen(myX, myY,  0, -1);
+            this.dirGen(myX, myY,  1, -1);
         }
     }; // end Board.prototype
-    
-    
+
+
     exports.Board = Board;
 }(exports));
